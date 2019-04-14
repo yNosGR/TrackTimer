@@ -37,10 +37,7 @@ void setup() {
   while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB
   }
-  Serial.println("Setup");
-  Serial.println("start i2c interface");
-  //Wire.begin();
-  Serial.println("init the display");
+  Serial.println("https://github.com/yNosGR/TrackTimer");
   //init and setup the display
   display.begin(SSD1306_SWITCHCAPVCC, 0X3c);
   display.clearDisplay();
@@ -48,6 +45,8 @@ void setup() {
   display.setTextSize(1);
   display.setCursor(0,1);
   display.print("Ready!");
+  display.setCursor(0,40);
+
   display.display();
   
   // set out outputs
@@ -61,7 +60,7 @@ void setup() {
   attachInterrupt(track2, track2Event, FALLING);
   pinMode(gate,INPUT_PULLUP);
   attachInterrupt(gate, gateDrop, FALLING);
-  Serial.println("setup complete");
+  
 
 }
 void gateDrop(){
@@ -82,13 +81,11 @@ void gateDrop(){
 }
 
 void track1Event() {
- //Serial.println("track1Event");
  track1Time = millis()-startTime;
  track1State = 1;
 }
 
 void track2Event() {
- //Serial.println("track2Event");
  track2Time = millis()-startTime;
  track2State = 1;
 }
@@ -100,10 +97,11 @@ void loop() {
     display.println("Gate Dropped");
     delay(100);
     digitalWrite(LED, !digitalRead(LED));
-    Serial.print(digitalRead(track1));Serial.print(","); Serial.print(digitalRead(track2));Serial.print(","); Serial.println(digitalRead(gate));
+    //Serial.print(digitalRead(track1));Serial.print(","); Serial.print(digitalRead(track2));Serial.print(","); Serial.println(digitalRead(gate));
     //Serial.print(track1Time);Serial.print(","); Serial.print(track2Time);Serial.print(","); Serial.println(startTime);
   }
   while ((!track1Time == 0 || !track2Time == 0) && (track1State != track2State) && !TOTtripped) {
+    raceState = 1;
     TOT = millis() - startTime;
     if (track1Time == 0 && TOT <= TOTmax){
       Serial.print("Track 2 Wins!: ");
@@ -161,16 +159,7 @@ void loop() {
       display.display();     
       
     }
-    Serial.print("Final Results:    Track1: ");Serial.print(track1Time);Serial.print("    Track2: "); Serial.print(track2Time);Serial.print("    Start Time: "); Serial.println(startTime);
+    
     raceState = 0;
-  }
-
-  if (!digitalRead(leftButton)){
-    Serial.println("leftButtonPressed");
-    display.clearDisplay();
-    display.setCursor(0,0);
-    display.println("Ready!");
-    display.display(); 
-    delay(100);
   }
 }
