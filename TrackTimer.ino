@@ -26,17 +26,29 @@ volatile int raceState;
 volatile int TOTtripped;
 static unsigned long TOTmax = 30000; // If you cant make it down the track in 30 seconds, something is broke.
 volatile unsigned long TOT; // time out timer
-volatile unsigned long startTime;
-volatile unsigned long track1Time;
-volatile unsigned long track2Time;
+volatile unsigned long startTime = 3;
+volatile unsigned long track1Time = 3;
+volatile unsigned long track2Time = 3;
 
 void setup() {
+  
 
   Serial.begin(115200); // init the serial
   while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB
   }
   Serial.println("Setup");
+  Serial.println("start i2c interface");
+  //Wire.begin();
+  Serial.println("init the display");
+  //init and setup the display
+  display.begin(SSD1306_SWITCHCAPVCC, 0X3c);
+  display.clearDisplay();
+  display.setTextColor(WHITE);
+  display.setTextSize(1);
+  display.setCursor(0,1);
+  display.print("Ready!");
+  display.display();
   
   // set out outputs
   pinMode(LED, OUTPUT); // set the LED pin to an output
@@ -49,11 +61,10 @@ void setup() {
   attachInterrupt(track2, track2Event, FALLING);
   pinMode(gate,INPUT_PULLUP);
   attachInterrupt(gate, gateDrop, FALLING);
-  
+  Serial.println("setup complete");
 
 }
 void gateDrop(){
-  Serial.println("gatedrop");
   startTime = millis();
   track1Time = 0;
   track2Time = 0;
@@ -62,6 +73,11 @@ void gateDrop(){
   gateState = 0; 
   raceState = 1;
   TOTtripped = 0; 
+  Serial.println("Go!");
+  display.clearDisplay();
+  display.setCursor(0,0);
+  display.println("Go!");
+  display.display();
   
 }
 
@@ -93,6 +109,12 @@ void loop() {
       Serial.print("Track 2 Wins!: ");
       Serial.println(track2Time);
       Serial.print(digitalRead(track1));Serial.print(","); Serial.print(digitalRead(track2));Serial.print(","); Serial.println(digitalRead(gate));
+      display.clearDisplay();
+      display.setCursor(0,40);
+      display.println("Track 2 wins!");
+      display.print("Time:  "); display.print(track2Time/1000);display.print(".");display.print(track2Time%1000);
+      display.display();
+      
       delay(500);
     }
     if (track2Time == 0 && TOT <= TOTmax){
@@ -101,6 +123,12 @@ void loop() {
       Serial.println(track1Time);
       Serial.print(digitalRead(track1));Serial.print(","); Serial.print(digitalRead(track2));Serial.print(","); Serial.println(digitalRead(gate));
       TOT++;
+      display.clearDisplay();
+      display.setCursor(0,0);
+      display.println("Track 1 wins!");
+      display.print("Time:  "); display.print(track1Time/1000);display.print("."); display.print(track1Time%1000);
+      display.display();
+      
       delay(500);
     }
     while (TOT >= TOTmax){
@@ -110,9 +138,39 @@ void loop() {
       }
     }
   } 
-  while (raceState == 1){
+  while (raceState == 1) {
+    if (track1Time<track2Time){
+      display.clearDisplay();
+      display.setCursor(0,0);
+      display.println("Track 1 wins!");
+      display.print("Time:  "); display.print(track1Time/1000);display.print("."); display.print(track1Time%1000);
+      display.setCursor(0,40);
+      display.println("Track 2");
+      display.print("Time:  "); display.print(track2Time/1000);display.print("."); display.print(track2Time%1000);
+      display.display();     
+      
+    }
+    if (track1Time>track2Time){
+      display.clearDisplay();
+      display.setCursor(0,0);
+      display.println("Track 1");
+      display.print("Time:  "); display.print(track1Time/1000);display.print("."); display.print(track1Time%1000);
+      display.setCursor(0,40);
+      display.println("Track 2 wins!");
+      display.print("Time:  "); display.print(track2Time/1000);display.print("."); display.print(track2Time%1000);
+      display.display();     
+      
+    }
     Serial.print("Final Results:    Track1: ");Serial.print(track1Time);Serial.print("    Track2: "); Serial.print(track2Time);Serial.print("    Start Time: "); Serial.println(startTime);
     raceState = 0;
   }
-    
+
+  if (!digitalRead(leftButton)){
+    Serial.println("leftButtonPressed");
+    display.clearDisplay();
+    display.setCursor(0,0);
+    display.println("Ready!");
+    display.display(); 
+    delay(100);
+  }
 }
