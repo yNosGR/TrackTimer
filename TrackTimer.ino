@@ -11,12 +11,8 @@ Adafruit_SSD1306 display(OLED_RESET);
 
 
 int LED = PC13;
-int leftButton = PA0;
-int leftButtonState;
-int rightButton = PA1;
-int rightButtonState;
-int track1 = PA2;
-int track2 = PB0;
+int track1 = PA3;
+int track2 = PB11;
 int gate = PC14;
 
 volatile int track1State;
@@ -52,8 +48,6 @@ void setup() {
   // set out outputs
   pinMode(LED, OUTPUT); // set the LED pin to an output
   // set our inputs
-  pinMode(leftButton,INPUT_PULLUP);
-  pinMode(rightButton,INPUT_PULLUP);
   pinMode(track1,INPUT_PULLUP);
   attachInterrupt(track1, track1Event, FALLING);
   pinMode(track2,INPUT_PULLUP);
@@ -113,7 +107,7 @@ void loop() {
       display.print("Time:  "); display.print(track2Time/1000);display.print(".");display.print(track2Time%1000);
       display.display();
       
-      delay(500);
+      delay(150);
     }
     if (track2Time == 0 && TOT <= TOTmax){
       TOT = millis() - startTime;
@@ -127,7 +121,7 @@ void loop() {
       display.print("Time:  "); display.print(track1Time/1000);display.print("."); display.print(track1Time%1000);
       display.display();
       
-      delay(500);
+      delay(150);
     }
     while (TOT >= TOTmax){
       if (!TOTtripped){
@@ -138,6 +132,7 @@ void loop() {
   } 
   while (raceState == 1) {
     if (track1Time<track2Time){
+      Serial.println("Display Finish Stats");
       display.clearDisplay();
       display.setCursor(0,0);
       display.println("Track 1 wins!");
@@ -149,6 +144,7 @@ void loop() {
       
     }
     if (track1Time>track2Time){
+      Serial.println("Display Finish Stats");
       display.clearDisplay();
       display.setCursor(0,0);
       display.println("Track 1");
@@ -159,7 +155,8 @@ void loop() {
       display.display();     
       
     }
-    
+    Serial.println("Reset raceState");
     raceState = 0;
   }
+  
 }
