@@ -30,15 +30,18 @@ void setup() {
   
 
   Serial.begin(115200); // init the serial
-  while (!Serial) {
+ /* // this is for debugging only.  It will stop the uC if there isnt something watching the serial port 
+    while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB
   }
+  */
   Serial.println("https://github.com/yNosGR/TrackTimer");
   //init and setup the display
   display.begin(SSD1306_SWITCHCAPVCC, 0X3c);
   display.clearDisplay();
   display.setTextColor(WHITE);
   display.setTextSize(1);
+  display.setRotation(2); // to rotate 180 degrees, uncomment this line
   display.setCursor(0,1);
   display.print("Ready!");
   display.setCursor(0,40);
